@@ -9,7 +9,7 @@ import FullCalendar from '@fullcalendar/react';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
-import * as icons from "@material-ui/icons";
+import * as icons from '@material-ui/icons';
 import Fab from '@material-ui/core/Fab';
 
 // 3rd party
@@ -23,7 +23,8 @@ import './calendar.scss';
 class Calendar extends Component {
 
     static defaultProps = {
-        calendarComponentRef: React.createRef()
+        calendarComponentRef: React.createRef(),
+        colors: ['crimson', 'orange', 'green', 'pink']
     };
 
     constructor(props) {
@@ -35,11 +36,13 @@ class Calendar extends Component {
             selectedDate: new Date(),
             calendarApi: null,
             isFloatingMenuVisible: true,
-            isGotoDateFormOpen: false
+            isGotoDateFormOpen: false,
+            defaultEndDate: null
         };
 
         this.toggleFloatingMenu = this.toggleFloatingMenu.bind(this);
         this.toggleGoToDateForm = this.toggleGoToDateForm.bind(this);
+        this.onDateChanged = this.onDateChanged.bind(this);
         this.goToPreviousMonth = this.goToPreviousMonth.bind(this);
         this.handleDateClick = this.handleDateClick.bind(this);
         this.closeEventForm = this.closeEventForm.bind(this);
@@ -49,8 +52,21 @@ class Calendar extends Component {
     }
 
     handleDateClick(evt) {
-        console.log(evt);
-        this.setState({ isEventFormOpen: !this.state.isEventFormOpen });
+        const selectedDate = evt.date
+        const defaultEndDate = new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate() + 1);
+        this.setState({
+            isEventFormOpen: !this.state.isEventFormOpen,
+            selectedDate,
+            defaultEndDate
+        });
+    }
+
+    onDateChanged(statePropName, newDate) {
+        console.log(newDate);
+        this.setState({ [statePropName]: newDate})
     }
 
     closeEventForm() {
@@ -93,7 +109,7 @@ class Calendar extends Component {
                 <div className='Calendar'>
                     <FullCalendar
                         defaultView="dayGridMonth"
-                        defaultDate={ this.state.selectedDate }
+                        defaultDate={ new Date() }
                         header={{
                             left: '',
                             center: 'title',
@@ -105,7 +121,14 @@ class Calendar extends Component {
                         events={ this.state.calendarEvents }
                         dateClick={ this.handleDateClick }
                     />
-                    <EventForm open={ this.state.isEventFormOpen } closeForm={ this.closeEventForm } />
+                    <EventForm
+                        defaultEndDate={ this.state.defaultEndDate }
+                        selectedDate={ this.state.selectedDate }
+                        onDateChanged={ this.onDateChanged }
+                        open={ this.state.isEventFormOpen }
+                        closeForm={ this.closeEventForm }
+                        colors={ this.props.colors }
+                    />
                 </div>
                 <div className='floating-menu'>
                     <Fab

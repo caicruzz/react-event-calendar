@@ -14,7 +14,7 @@ class TopBar extends Component {
                         <MenuIcon />
                     </IconButton>
                     <Typography variant="h6">
-                        News
+                        Calendar
                     </Typography>
                 </Toolbar>
             </AppBar>

@@ -1,22 +1,7 @@
-#title {
-    width: 30%;
-    display: inline-block;
+.EventFormGrid {
+    overflow: hidden;
 }
 
-#assignee {
-    margin-left: 5%;
-    width: 30%;
-    display: inline-block;
+.EventFormDialogContent {
+    margin-bottom: 2%;
 }
-
-#event-color {
-    margin-left: 5%;
-    width: 30%;
-    display: inline-block;
-}
-
-#start-date {
-    width: 30%;
-}
-
-
