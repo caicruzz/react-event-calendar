@@ -9,36 +9,51 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Button from '@material-ui/core/Button';
+import './EventForm.css';
 
 class EventForm extends Component {
     render() {
         return(
             <div>
-                <Dialog open={ this.props.open }>
+                <Dialog open={ this.props.open } fullWidth={ true }>
                     <DialogTitle id="form-dialog-title">Add Event</DialogTitle>
                     <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="title"
-                            label="title"
-                            type="text"
-                        />
-                        <TextField
-                            margin="dense"
-                            id="assignee"
-                            label="assignee"
-                            type="text"
-                        />
-                        <FormControl>
-                            <InputLabel id='color-dropdown'>Color</InputLabel>
-                            <Select labelId='color-dropdown'>
-                                <MenuItem>Crimson</MenuItem>
-                            </Select>
-                        </FormControl>
+                        <div id='title'>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                label="title"
+                                type="text"
+                                classes='EventFormInput'
+                            />
+                        </div>
+                        <div id='assignee'>
+                            <TextField
+                                margin="dense"
+                                label="assignee"
+                                type="text"
+                                fullWidth={true}
+                            />
+                        </div>
+                        <div id='event-color'>
+                            <FormControl fullWidth={true}>
+                                <InputLabel id='color-dropdown'>Color</InputLabel>
+                                <Select labelId='color-dropdown'>
+                                    <MenuItem>Crimson</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </div>
+                        <div id='start-date'>
+                            <TextField
+                                margin="dense"
+                                label="assignee"
+                                type="datetime-local"
+                                fullWidth={true}
+                            />
+                        </div>
                     </DialogContent>
                     <DialogActions>
-                        <Button>Close</Button>
+                        <Button onClick={ this.props.closeForm }>Close</Button>
                         <Button>Add</Button>
                     </DialogActions>
                 </Dialog>

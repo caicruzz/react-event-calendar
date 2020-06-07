@@ -1,13 +1,13 @@
 import React from 'react';
 import './App.css';
-import CalendarNavBar from './CalendarNavBar';
+import Calendar from './Calendar';
 import TopBar from './TopBar';
 
 function App() {
   return (
     <div className="App">
         <TopBar/>
-        <CalendarNavBar/>
+        <Calendar/>
     </div>
   );
 }

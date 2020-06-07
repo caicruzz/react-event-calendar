@@ -3,3 +3,59 @@
 @import '~@fullcalendar/core/main.css';
 @import '~@fullcalendar/daygrid/main.css';
 @import '~@fullcalendar/timegrid/main.css';
+
+.Calendar {
+  margin: 1% auto;
+  width: 55%;
+  height: 80%;
+  border-radius: 10px;
+  box-shadow: 0px 8px 15px rgba(0,0,0,.5);
+  padding: 0 10px 10px 10px;
+}
+
+.title {
+  margin: 0 0 0 35%;
+  display: inline-block;
+  text-align: center;
+}
+
+.floating-menu {
+  width: 3%;
+  position: absolute;
+  left: 80%;
+  bottom: 2.5em;
+}
+
+.floating-menu button {
+  display: block;
+  margin-top: 5px;
+}
+
+.invisible-button {
+  animation: scale-out .5s, rotate-out .6s;
+  opacity: 0;
+}
+
+.visible-button {
+  animation: scale-in .5s, rotate-in .6s;
+}
+
+@keyframes scale-in {
+  from {transform: scale(0);opacity: 0;}
+  to {transform: scale(1);opacity: 1;}
+}
+
+@keyframes scale-out {
+  from {transform: scale(1);opacity: 1;}
+  to {transform: scale(0);opacity: 0;}
+}
+
+@keyframes rotate-in {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+
+@keyframes rotate-out {
+  from {transform: rotate(360deg);}
+  to {transform: rotate(0deg);}
+}

@@ -1,0 +1,22 @@
+#title {
+    width: 30%;
+    display: inline-block;
+}
+
+#assignee {
+    margin-left: 5%;
+    width: 30%;
+    display: inline-block;
+}
+
+#event-color {
+    margin-left: 5%;
+    width: 30%;
+    display: inline-block;
+}
+
+#start-date {
+    width: 30%;
+}
+
+
