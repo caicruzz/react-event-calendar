@@ -33,7 +33,7 @@ class Calendar extends Component {
             calendarWeekends: true,
             calendarEvents: [{ title: 'Event Now', start: new Date() }],
             isEventFormOpen: false,
-            selectedDate: new Date(),
+            selectedStartDate: new Date(),
             calendarApi: null,
             isFloatingMenuVisible: true,
             isGotoDateFormOpen: false,
@@ -52,14 +52,16 @@ class Calendar extends Component {
     }
 
     handleDateClick(evt) {
-        const selectedDate = evt.date
+        const selectedStartDate = evt.date
         const defaultEndDate = new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate() + 1);
+            selectedStartDate.getFullYear(),
+            selectedStartDate.getMonth(),
+            selectedStartDate.getDate() + 1);
+
+        console.log(defaultEndDate);
         this.setState({
             isEventFormOpen: !this.state.isEventFormOpen,
-            selectedDate,
+            selectedStartDate,
             defaultEndDate
         });
     }
@@ -122,8 +124,8 @@ class Calendar extends Component {
                         dateClick={ this.handleDateClick }
                     />
                     <EventForm
-                        defaultEndDate={ this.state.defaultEndDate }
-                        selectedDate={ this.state.selectedDate }
+                        end={ this.state.defaultEndDate }
+                        selectedStartDate={ this.state.selectedStartDate }
                         onDateChanged={ this.onDateChanged }
                         open={ this.state.isEventFormOpen }
                         closeForm={ this.closeEventForm }
