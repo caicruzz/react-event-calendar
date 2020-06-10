@@ -17,6 +17,7 @@ import { DatePickerCalendar } from 'react-nice-dates';
 import { enUS } from 'date-fns/locale';
 import 'react-nice-dates/build/style.css';
 
+import DataService from './DataService';
 import EventForm from './EventForm';
 import './calendar.scss';
 
@@ -24,7 +25,8 @@ class Calendar extends Component {
 
     static defaultProps = {
         calendarComponentRef: React.createRef(),
-        colors: ['crimson', 'orange', 'green', 'pink']
+        colors: ['crimson', 'blue', 'orange', 'green', 'pink', 'purple'],
+        baseUrl: 'http://localhost:3001/api/events'
     };
 
     constructor(props) {
@@ -40,13 +42,15 @@ class Calendar extends Component {
             defaultEndDate: null
         };
 
+        this.getCurrentViewCalendarEvents = this.getCurrentViewCalendarEvents.bind(this);
         this.toggleFloatingMenu = this.toggleFloatingMenu.bind(this);
         this.toggleGoToDateForm = this.toggleGoToDateForm.bind(this);
-        this.onDateChanged = this.onDateChanged.bind(this);
         this.goToPreviousMonth = this.goToPreviousMonth.bind(this);
+        this.addCalendarEvent = this.addCalendarEvent.bind(this);
         this.handleDateClick = this.handleDateClick.bind(this);
         this.closeEventForm = this.closeEventForm.bind(this);
         this.goToNextMonth = this.goToNextMonth.bind(this);
+        this.onDateChanged = this.onDateChanged.bind(this);
         this.changeDate = this.changeDate.bind(this);
         this.goToToday = this.goToToday.bind(this);
     }
@@ -58,7 +62,6 @@ class Calendar extends Component {
             selectedStartDate.getMonth(),
             selectedStartDate.getDate() + 1);
 
-        console.log(defaultEndDate);
         this.setState({
             isEventFormOpen: !this.state.isEventFormOpen,
             selectedStartDate,
@@ -66,8 +69,12 @@ class Calendar extends Component {
         });
     }
 
+    componentDidMount() {
+        const calendarApi = this.props.calendarComponentRef.current.getApi();
+        this.setState({ calendarApi }, this.getCurrentViewCalendarEvents);
+    }
+
     onDateChanged(statePropName, newDate) {
-        console.log(newDate);
         this.setState({ [statePropName]: newDate})
     }
 
@@ -75,17 +82,21 @@ class Calendar extends Component {
         this.setState({ isEventFormOpen: false});
     }
 
-    componentDidMount() {
-        const calendarApi = this.props.calendarComponentRef.current.getApi();
-        this.setState({ calendarApi });
-    }
-
     goToToday() {
         this.state.calendarApi.gotoDate(new Date());
+        this.getCurrentViewCalendarEvents();
     }
 
     goToNextMonth() {
         this.state.calendarApi.next();
+        this.getCurrentViewCalendarEvents();
+    }
+
+    getCurrentViewCalendarEvents() {
+        const calendarView = this.state.calendarApi.view;
+        const params = { start: calendarView.activeStart, end: calendarView.activeEnd }
+        DataService.get(`${this.props.baseUrl}/range`, params)
+            .then(result => this.setState({ calendarEvents: result }));
     }
 
     toggleGoToDateForm() {
@@ -94,15 +105,27 @@ class Calendar extends Component {
 
     goToPreviousMonth() {
         this.state.calendarApi.prev();
+        this.getCurrentViewCalendarEvents();
     }
 
     changeDate(e) {
         this.state.calendarApi.gotoDate(e);
         this.setState({ isGotoDateFormOpen: false });
+        this.getCurrentViewCalendarEvents();
     }
 
     toggleFloatingMenu() {
         this.setState(state => ({ isFloatingMenuVisible: !state.isFloatingMenuVisible}));
+    }
+
+    addCalendarEvent(calendarEvent) {
+        DataService.post(`${this.props.baseUrl}`, calendarEvent)
+            .then(result => {
+                this.setState(
+                    (state) => ({ calendarEvents: [...state.calendarEvents, result]}),
+                    this.closeEventForm
+                );
+            });
     }
 
     render() {
@@ -130,6 +153,7 @@ class Calendar extends Component {
                         open={ this.state.isEventFormOpen }
                         closeForm={ this.closeEventForm }
                         colors={ this.props.colors }
+                        addCalendarEvent={ this.addCalendarEvent }
                     />
                 </div>
                 <div className='floating-menu'>

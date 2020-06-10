@@ -24,7 +24,6 @@ import './EventForm.css';
 class EventForm extends Component {
     constructor(props) {
         super(props);
-        console.log('constructor');
         this.state = {
             title: '',
             assignedTo: '',
@@ -33,7 +32,7 @@ class EventForm extends Component {
             end: this.props.end,
         }
 
-        console.log(this.props.end, this.state.end);
+        this.handleOnDateChange = this.handleOnDateChange.bind(this);
         this.handleOnChange = this.handleOnChange.bind(this);
     }
 
@@ -41,115 +40,115 @@ class EventForm extends Component {
         this.setState({ [evt.target.name]: evt.target.value});
     }
 
-    componentDidMount() {
-        console.log('did mount')
+    handleOnDateChange(statePropName, newDate) {
+        this.setState({ [statePropName]: newDate });
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.props === prevProps) return;
 
         const start = this.props.selectedStartDate;
         const end = this.props.end;
         this.setState({ start, end });
     }
+
     render() {
         return(
             <div>
                 <Dialog open={ this.props.open } fullWidth={ true }>
                     <DialogTitle>Add Event</DialogTitle>
                     <DialogContent className='EventFormDialogContent'>
-                        <form >
-                            <Grid container spacing={3} className='EventFormGrid'>
-                                <Grid item xs={12} md={4}>
-                                    <TextField
-                                        autoFocus
-                                        label="Title"
-                                        name="title"
-                                        type="text"
-                                        value={ this.state.title }
+                        <Grid container spacing={3} className='EventFormGrid'>
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    autoFocus
+                                    label='Title'
+                                    name='title'
+                                    type='text'
+                                    value={ this.state.title }
+                                    onChange={ this.handleOnChange }
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    label='Assignee'
+                                    type='text'
+                                    name='assignedTo'
+                                    fullWidth={true}
+                                    value={ this.state.assignedTo }
+                                    onChange={ this.handleOnChange }
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <FormControl fullWidth={true}>
+                                    <InputLabel id='color-dropdown'>Color</InputLabel>
+                                    <Select
+                                        labelId='color-dropdown'
+                                        value={ this.state.color }
                                         onChange={ this.handleOnChange }
+                                        name='color'
+                                    >
+                                        { this.props.colors.map(c => <MenuItem
+                                            key={c}
+                                            value={c}
+                                        >{c}</MenuItem>) }
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                <Grid item xs={12} md={6}>
+                                    <KeyboardDatePicker
+                                        label='Start'
+                                        format='MM/dd/yyyy'
+                                        name='start'
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change date',
+                                        }}
+                                        value={ this.state.start }
+                                        onChange={ (newDate) => this.handleOnDateChange('start', newDate) }
                                     />
                                 </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <TextField
-                                        label="Assignee"
-                                        type="text"
-                                        name="assignedTo"
-                                        fullWidth={true}
-                                        value={ this.state.assignedTo }
-                                        onChange={ this.handleOnChange }
+                                <Grid item xs={12} md={6}>
+                                    <KeyboardTimePicker
+                                        label='Start Time'
+                                        name='start'
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change time',
+                                        }}
+                                        value={ this.state.start }
+                                        onChange={ (newDate) => this.handleOnDateChange('start', newDate) }
                                     />
                                 </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <FormControl fullWidth={true}>
-                                        <InputLabel id='color-dropdown'>Color</InputLabel>
-                                        <Select
-                                            labelId='color-dropdown'
-                                            value={ this.state.color }
-                                            onChange={ this.handleOnChange } 
-                                        >
-                                            { this.props.colors.map(c => <MenuItem
-                                                key={c}
-                                                value={c}
-                                            >{c}</MenuItem>) }
-                                        </Select>
-                                    </FormControl>
+                                <Grid item xs={12} md={6}>
+                                    <KeyboardDatePicker
+                                        label='End'
+                                        name='end'
+                                        format='MM/dd/yyyy'
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change date',
+                                        }}
+                                        value={ this.state.end }
+                                        onChange={ (newDate) => this.handleOnDateChange('end', newDate) }
+                                    />
                                 </Grid>
-                                <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                    <Grid item xs={12} md={6}>
-                                        <KeyboardDatePicker
-                                            label="Start"
-                                            format="MM/dd/yyyy"
-                                            name="start"
-                                            KeyboardButtonProps={{
-                                                'aria-label': 'change date',
-                                            }}
-                                            value={ this.state.start }
-                                            onChange={ this.handleOnChange }
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <KeyboardTimePicker
-                                            label="Start Time"
-                                            name="start"
-                                            KeyboardButtonProps={{
-                                                'aria-label': 'change time',
-                                            }}
-                                            value={ this.state.start }
-                                            onChange={ this.handleOnChange }
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <KeyboardDatePicker
-                                            label="End"
-                                            name="end"
-                                            format="MM/dd/yyyy"
-                                            KeyboardButtonProps={{
-                                                'aria-label': 'change date',
-                                            }}
-                                            value={ this.state.end }
-                                            onChange={ console.log }
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <KeyboardTimePicker
-                                            label="End Time"
-                                            name="end"
-                                            KeyboardButtonProps={{
-                                                'aria-label': 'change time',
-                                            }}
-                                            value={ this.state.end }
-                                            onChange={ console.log }
-                                        />
-                                    </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <KeyboardTimePicker
+                                        label='End Time'
+                                        name='end'
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change time',
+                                        }}
+                                        value={ this.state.end }
+                                        onChange={ (newDate) => this.handleOnDateChange('end', newDate) }
+                                    />
+                                </Grid>
                                 </MuiPickersUtilsProvider>
                             </Grid>
-                        </form>
                     </DialogContent>
                     <DialogActions>
-                        <Button color="primary" variant='contained'>Add</Button>
-                        <Button color="secondary" variant='contained' startIcon={<icons.Delete />}>Delete</Button>
-                        <Button onClick={ this.props.closeForm } color="primary" variant='contained'>Close</Button>
+                        <Button onClick={ () => this.props.addCalendarEvent(this.state) } color='primary' variant='contained'>Add</Button>
+                        <Button color='secondary' variant='contained' startIcon={<icons.Delete />}>Delete</Button>
+                        <Button onClick={ this.props.closeForm } color='primary' variant='contained'>Close</Button>
                     </DialogActions>
                 </Dialog>
             </div>
