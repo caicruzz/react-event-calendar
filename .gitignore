@@ -23,4 +23,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # ide files
-/.idea
+.idea/
+.idea/workspace.xml
+.idea

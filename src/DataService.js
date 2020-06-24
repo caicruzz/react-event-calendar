@@ -14,6 +14,14 @@ class DataService {
     static post(url, data) {
         return axios.post(url, data).then(result => result.data);
     }
+
+    static patch(url, data) {
+        return axios.patch(url, data).then(result => result.data);
+    }
+
+    static delete(url) {
+        return axios.delete(url).then(result => result.data);
+    }
 }
 
 export default DataService;

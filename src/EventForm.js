@@ -24,32 +24,105 @@ import './EventForm.css';
 class EventForm extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            title: '',
-            assignedTo: '',
-            color: 'crimson',
-            start: this.props.selectedStartDate,
-            end: this.props.end,
-        }
+        this.state = this.props.isEditMode
+            ? this.generateStateBasedOnEvent(this.props.eventToEdit)
+            : this.generateCleanState();
 
+        this.handleDeleteCalendarEvent = this.handleDeleteCalendarEvent.bind(this);
         this.handleOnDateChange = this.handleOnDateChange.bind(this);
+        this.getEmptyFormFields = this.getEmptyFormFields.bind(this);
+        this.handleOnSubmitForm = this.handleOnSubmitForm.bind(this);
         this.handleOnChange = this.handleOnChange.bind(this);
+        this.validateForm = this.validateForm.bind(this);
+    }
+
+    generateCleanState() {
+        return {
+            fields: {
+                title: '',
+                assignedTo: '',
+                color: 'crimson',
+                start: this.props.selectedStartDate,
+                end: this.props.end
+            },
+            fieldErrors: [],
+            isDeleteButtonEnabled: false,
+            isFormValid: false
+        }
+    }
+
+    generateStateBasedOnEvent(event) {
+        return {
+            fields: {
+                ...event
+            },
+            fieldErrors: [],
+            isDeleteButtonEnabled: false,
+            isFormValid: false
+        }
     }
 
     handleOnChange(evt) {
-        this.setState({ [evt.target.name]: evt.target.value});
+        let fields = {...this.state.fields};
+        fields[evt.target.name] = evt.target.value;
+        this.setState({ fields }, this.validateForm);
     }
 
     handleOnDateChange(statePropName, newDate) {
-        this.setState({ [statePropName]: newDate });
+        let fields = {...this.state.fields};
+        fields[statePropName] = newDate;
+        this.setState({ fields }, this.validateForm);
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.props === prevProps) return;
+    handleDeleteCalendarEvent() {
+        const _id = this.state.fields._id;
+        this.props.deleteCalendarEvent(_id);
+    }
 
-        const start = this.props.selectedStartDate;
-        const end = this.props.end;
-        this.setState({ start, end });
+    isFieldEmpty(field) {
+        if (typeof field === 'string') {
+            return field.trim() === '';
+        } else {
+            return field === null || field === undefined;
+        }
+    }
+
+    validateForm() {
+        const { start, end } = this.state.fields;
+        const emptyFormFields = this.getEmptyFormFields()
+        let fieldErrors = [];
+        let isFormValid = false;
+
+        if (!this.isFieldEmpty(end) && !this.isFieldEmpty(start) && end <= start) {
+            fieldErrors = ['End date and time must be after start date and time.'];
+        }
+
+        const emptyFieldsFormErrorMessage = emptyFormFields.map(eff => `${eff} is required.`)
+        fieldErrors = [...fieldErrors, ...emptyFieldsFormErrorMessage]
+
+        if (fieldErrors.length === 0) isFormValid = true;
+
+        this.setState({ fieldErrors, isFormValid });
+    }
+
+    getEmptyFormFields() {
+        let emptyFields = [];
+
+        for (const field in this.state.fields) {
+            if (this.isFieldEmpty(this.state.fields[field])) {
+                emptyFields.push(field);
+            }
+        }
+
+        return emptyFields;
+    }
+
+    async handleOnSubmitForm() {
+        await this.validateForm();
+
+        if (this.state.isFormValid) {
+            this.props.addCalendarEvent(this.state.fields);
+        }
     }
 
     render() {
@@ -65,7 +138,7 @@ class EventForm extends Component {
                                     label='Title'
                                     name='title'
                                     type='text'
-                                    value={ this.state.title }
+                                    value={ this.state.fields.title }
                                     onChange={ this.handleOnChange }
                                 />
                             </Grid>
@@ -75,7 +148,7 @@ class EventForm extends Component {
                                     type='text'
                                     name='assignedTo'
                                     fullWidth={true}
-                                    value={ this.state.assignedTo }
+                                    value={ this.state.fields.assignedTo }
                                     onChange={ this.handleOnChange }
                                 />
                             </Grid>
@@ -84,7 +157,7 @@ class EventForm extends Component {
                                     <InputLabel id='color-dropdown'>Color</InputLabel>
                                     <Select
                                         labelId='color-dropdown'
-                                        value={ this.state.color }
+                                        value={ this.state.fields.color }
                                         onChange={ this.handleOnChange }
                                         name='color'
                                     >
@@ -104,7 +177,7 @@ class EventForm extends Component {
                                         KeyboardButtonProps={{
                                             'aria-label': 'change date',
                                         }}
-                                        value={ this.state.start }
+                                        value={ this.state.fields.start }
                                         onChange={ (newDate) => this.handleOnDateChange('start', newDate) }
                                     />
                                 </Grid>
@@ -115,7 +188,7 @@ class EventForm extends Component {
                                         KeyboardButtonProps={{
                                             'aria-label': 'change time',
                                         }}
-                                        value={ this.state.start }
+                                        value={ this.state.fields.start }
                                         onChange={ (newDate) => this.handleOnDateChange('start', newDate) }
                                     />
                                 </Grid>
@@ -127,7 +200,7 @@ class EventForm extends Component {
                                         KeyboardButtonProps={{
                                             'aria-label': 'change date',
                                         }}
-                                        value={ this.state.end }
+                                        value={ this.state.fields.end }
                                         onChange={ (newDate) => this.handleOnDateChange('end', newDate) }
                                     />
                                 </Grid>
@@ -138,17 +211,42 @@ class EventForm extends Component {
                                         KeyboardButtonProps={{
                                             'aria-label': 'change time',
                                         }}
-                                        value={ this.state.end }
+                                        value={ this.state.fields.end }
                                         onChange={ (newDate) => this.handleOnDateChange('end', newDate) }
                                     />
                                 </Grid>
+                                    <Grid item xs={12} className='FormErrors'>
+                                        <ul>
+                                            {this.state.fieldErrors.map((fe, index) => <li key={index}><span>{fe}</span></li>)}
+                                        </ul>
+                                    </Grid>
                                 </MuiPickersUtilsProvider>
                             </Grid>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={ () => this.props.addCalendarEvent(this.state) } color='primary' variant='contained'>Add</Button>
-                        <Button color='secondary' variant='contained' startIcon={<icons.Delete />}>Delete</Button>
-                        <Button onClick={ this.props.closeForm } color='primary' variant='contained'>Close</Button>
+                        <Button
+                            onClick={ this.handleOnSubmitForm }
+                            variant='contained'
+                            color='primary'
+                        >
+                            { this.props.isEditMode ? 'Edit': 'Add'}
+                        </Button>
+                        <Button
+                            disabled={ !this.props.isEditMode }
+                            startIcon={ <icons.Delete /> }
+                            onClick={ this.handleDeleteCalendarEvent }
+                            variant='contained'
+                            color='secondary'
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            onClick={ this.props.closeForm }
+                            variant='contained'
+                            color='primary'
+                        >
+                            Close
+                        </Button>
                     </DialogActions>
                 </Dialog>
             </div>

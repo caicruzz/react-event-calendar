@@ -33,29 +33,33 @@ class Calendar extends Component {
         super(props);
         this.state = {
             calendarWeekends: true,
-            calendarEvents: [{ title: 'Event Now', start: new Date() }],
+            calendarEvents: [],
             isEventFormOpen: false,
             selectedStartDate: new Date(),
             calendarApi: null,
             isFloatingMenuVisible: true,
             isGotoDateFormOpen: false,
-            defaultEndDate: null
+            defaultEndDate: null,
+            isEventFormInEditMode: false,
+            eventToEdit: null
         };
 
         this.getCurrentViewCalendarEvents = this.getCurrentViewCalendarEvents.bind(this);
+        this.deleteCalendarEvent = this.deleteCalendarEvent.bind(this);
         this.toggleFloatingMenu = this.toggleFloatingMenu.bind(this);
         this.toggleGoToDateForm = this.toggleGoToDateForm.bind(this);
         this.goToPreviousMonth = this.goToPreviousMonth.bind(this);
         this.addCalendarEvent = this.addCalendarEvent.bind(this);
-        this.handleDateClick = this.handleDateClick.bind(this);
         this.closeEventForm = this.closeEventForm.bind(this);
         this.goToNextMonth = this.goToNextMonth.bind(this);
         this.onDateChanged = this.onDateChanged.bind(this);
+        this.onEventClick = this.onEventClick.bind(this);
+        this.onDateClick = this.onDateClick.bind(this);
         this.changeDate = this.changeDate.bind(this);
         this.goToToday = this.goToToday.bind(this);
     }
 
-    handleDateClick(evt) {
+    onDateClick(evt) {
         const selectedStartDate = evt.date
         const defaultEndDate = new Date(
             selectedStartDate.getFullYear(),
@@ -63,7 +67,9 @@ class Calendar extends Component {
             selectedStartDate.getDate() + 1);
 
         this.setState({
-            isEventFormOpen: !this.state.isEventFormOpen,
+            isEventFormInEditMode: false,
+            isEventFormOpen: true,
+            eventToEdit: null,
             selectedStartDate,
             defaultEndDate
         });
@@ -72,6 +78,13 @@ class Calendar extends Component {
     componentDidMount() {
         const calendarApi = this.props.calendarComponentRef.current.getApi();
         this.setState({ calendarApi }, this.getCurrentViewCalendarEvents);
+    }
+
+    onEventClick(evt) {
+        const { title, start, end, backgroundColor: color } = evt.event;
+        const {_id, assignedTo } = evt.event.extendedProps;
+        const eventToEdit = {_id, assignedTo, title, start, end, color};
+        this.setState({ isEventFormOpen: true, isEventFormInEditMode: true, eventToEdit })
     }
 
     onDateChanged(statePropName, newDate) {
@@ -119,12 +132,34 @@ class Calendar extends Component {
     }
 
     addCalendarEvent(calendarEvent) {
-        DataService.post(`${this.props.baseUrl}`, calendarEvent)
+        if (!calendarEvent.hasOwnProperty('_id')) {
+            DataService.post(`${this.props.baseUrl}`, calendarEvent)
+                .then(result => {
+                    this.setState(
+                        (state) => ({ calendarEvents: [...state.calendarEvents, result]}),
+                        this.closeEventForm
+                    );
+                });
+        } else {
+            DataService.patch(`${this.props.baseUrl}/${calendarEvent._id}`, calendarEvent)
+                .then(result => {
+                    const filteredEvents = this.state.calendarEvents.filter(ce => ce._id !== result._id);
+                    this.setState(
+                        {calendarEvents: [...filteredEvents, result]},
+                        this.closeEventForm
+                    );
+                });
+        }
+    }
+
+    deleteCalendarEvent(_id) {
+        DataService.delete(`${this.props.baseUrl}/${_id}`)
             .then(result => {
+                const filteredEvents = this.state.calendarEvents.filter(ce => ce._id !== _id);
                 this.setState(
-                    (state) => ({ calendarEvents: [...state.calendarEvents, result]}),
-                    this.closeEventForm
-                );
+                    { calendarEvents: filteredEvents },
+                        this.closeEventForm
+                    );
             });
     }
 
@@ -144,38 +179,45 @@ class Calendar extends Component {
                         ref={ this.props.calendarComponentRef }
                         weekends={ this.state.calendarWeekends }
                         events={ this.state.calendarEvents }
-                        dateClick={ this.handleDateClick }
+                        dateClick={ this.onDateClick }
+                        eventClick={ this.onEventClick }
                     />
-                    <EventForm
-                        end={ this.state.defaultEndDate }
-                        selectedStartDate={ this.state.selectedStartDate }
-                        onDateChanged={ this.onDateChanged }
-                        open={ this.state.isEventFormOpen }
-                        closeForm={ this.closeEventForm }
-                        colors={ this.props.colors }
-                        addCalendarEvent={ this.addCalendarEvent }
-                    />
+                    {
+                        this.state.isEventFormOpen &&
+                        <EventForm
+                            selectedStartDate={ this.state.selectedStartDate }
+                            isEditMode={ this.state.isEventFormInEditMode }
+                            addCalendarEvent={ this.addCalendarEvent }
+                            deleteCalendarEvent={ this.deleteCalendarEvent }
+                            eventToEdit={ this.state.eventToEdit }
+                            onDateChanged={ this.onDateChanged }
+                            open={ this.state.isEventFormOpen }
+                            end={ this.state.defaultEndDate }
+                            closeForm={ this.closeEventForm }
+                            colors={ this.props.colors }
+                        />
+                    }
                 </div>
                 <div className='floating-menu'>
                     <Fab
-                        color="secondary"
-                        aria-label="go to today"
+                        className={ this.state.isFloatingMenuVisible ? 'visible-button' : 'invisible-button'}
                         onClick={ this.goToToday }
-                        className={ this.state.isFloatingMenuVisible ? 'visible-button' : 'invisible-button'}>
+                        aria-label="go to today"
+                        color="secondary">
                         Today
                     </Fab>
                     <Fab
-                        color="secondary"
-                        aria-label="go to previous month"
+                        className={ this.state.isFloatingMenuVisible ? 'visible-button' : 'invisible-button'}
                         onClick={ this.goToPreviousMonth }
-                        className={ this.state.isFloatingMenuVisible ? 'visible-button' : 'invisible-button'}>
+                        aria-label="go to previous month"
+                        color="secondary">
                         <icons.ArrowBack />
                     </Fab>
                     <Fab
-                        color="secondary"
-                        aria-label="go to next month"
+                        className={ this.state.isFloatingMenuVisible ? 'visible-button' : 'invisible-button'}
                         onClick={ this.goToNextMonth }
-                        className={ this.state.isFloatingMenuVisible ? 'visible-button' : 'invisible-button'}>
+                        aria-label="go to next month"
+                        color="secondary">
                         <icons.ArrowForward />
                     </Fab>
                     <Fab

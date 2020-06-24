@@ -5,3 +5,13 @@
 .EventFormDialogContent {
     margin-bottom: 2%;
 }
+
+.FormErrors {
+    color: red;
+    font-size: .8em;
+    text-align: right;
+}
+
+.FormErrors ul {
+    list-style: none;
+}
